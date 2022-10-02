@@ -1,0 +1,41 @@
+---
+title: "Finance & Time Series"
+author: "Robert Arcaleanu"
+format: html
+editor: visual
+toc: true
+---
+
+# Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r, include=FALSE}
+packages <- list("data.table","ggplot2", "quantmod", "forecast","prophet",
+                 "tidymodels", "lubridate")
+lapply(packages, require, character.only = T)
+library(ggplot2)
+```
+
+You can add options to executable code like this
+
+```{r}
+mdate <- "2020-01-03"
+amazonPrices <- data.frame(getSymbols("DT", from = mdate, auto.assign = F))
+dates <- row.names(amazonPrices)
+dt_stock <- data.table(dates, amazonPrices)
+dt_stock[, dates := as.IDate(dates)]
+dt_stock[, closed_log := log(DT.Close)]
+
+ggplot(data = dt_stock,aes(x = dates)) + geom_point(aes(y = DT.Close), size = 0.5) +
+  geom_point(aes(y = DT.Open), size = 0.5, colour = "red") + theme_bw()
+
+ggplot(data = dt_stock) + geom_line(aes(x = dates, y = closed_log), size = 0.5) + 
+  theme_bw()
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
