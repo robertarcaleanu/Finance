@@ -2,8 +2,11 @@
 title: "Finance & Time Series"
 author: "Robert Arcaleanu"
 format: html
-editor: visual
+server: shiny
 toc: true
+execute: 
+  echo: false
+
 ---
 
 # Quarto
@@ -16,26 +19,79 @@ When you click the **Render** button a document will be generated that includes 
 
 ```{r, include=FALSE}
 packages <- list("data.table","ggplot2", "quantmod", "forecast","prophet",
-                 "tidymodels", "lubridate")
+                 "tidymodels", "lubridate", "tidyquant", "shiny", "plotly")
 lapply(packages, require, character.only = T)
 library(ggplot2)
 ```
 
 You can add options to executable code like this
 
+
 ```{r}
-mdate <- "2020-01-03"
-amazonPrices <- data.frame(getSymbols("DT", from = mdate, auto.assign = F))
-dates <- row.names(amazonPrices)
-dt_stock <- data.table(dates, amazonPrices)
-dt_stock[, dates := as.IDate(dates)]
-dt_stock[, closed_log := log(DT.Close)]
+inputPanel(
+  shiny::textInput("stock", "Select Stock", "PG")
+)
 
-ggplot(data = dt_stock,aes(x = dates)) + geom_point(aes(y = DT.Close), size = 0.5) +
-  geom_point(aes(y = DT.Open), size = 0.5, colour = "red") + theme_bw()
 
-ggplot(data = dt_stock) + geom_line(aes(x = dates, y = closed_log), size = 0.5) + 
-  theme_bw()
+
+# dt_stock <- data.table(tq_get(input$stock, get = "stock.prices", from = "1995-01-01"))
+# 
+# 
+# 
+# 
+# 
+# 
+# mdate <- "2020-01-03"
+# amazonPrices <- data.frame(getSymbols("DT", from = mdate, auto.assign = F))
+# dates <- row.names(amazonPrices)
+# dt_stock <- data.table(dates, amazonPrices)
+# dt_stock[, dates := as.IDate(dates)]
+# dt_stock[, closed_log := log(DT.Close)]
+# 
+# ggplot(data = dt_stock,aes(x = dates)) + geom_point(aes(y = DT.Close), size = 0.5) +
+#   geom_point(aes(y = DT.Open), size = 0.5, colour = "red") + theme_bw()
+# 
+# ggplot(data = dt_stock) + geom_line(aes(x = dates, y = closed_log), size = 0.5) + 
+#   theme_bw()
+```
+
+```{r}
+# plotlyOutput("distPlot")
+# textOutput("value")
+head(selectedData())
+
+```
+
+```{r}
+plotlyOutput("distPlot")
+# plotOutput("distPlot")
+# textOutput("value")
+
+```
+
+
+
+```{r}
+#| context: server
+
+library(data.table)
+library(tidyquant)
+library(ggplot2)
+library(plotly)
+output$value <- renderText({ input$stock })
+
+selectedData <- reactive({
+  
+    dt_stock <- data.table(tq_get(input$stock, get = "stock.prices", from = "2018-01-01"))
+  })
+
+output$distPlot <- renderPlotly({
+  
+  g <- ggplot(data = selectedData(), aes(x = date, y = close)) +
+    geom_line() + theme_tq()
+  ggplotly(g)
+
+})
 ```
 
 The `echo: false` option disables the printing of code (only output is displayed).
