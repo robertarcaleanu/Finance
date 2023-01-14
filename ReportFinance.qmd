@@ -9,13 +9,14 @@ execute:
 
 ---
 
-# Quarto
+# Introduction
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+This project is intended to demonstrate my knowledge on the following topics, but do not make decisions based on the results presented in the following sections:
 
-## Running Code
+- Stock Market - still working on it ;)
+- Timeseries
+- Data Analytics
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
 
 ```{r, include=FALSE}
 packages <- list("data.table","ggplot2", "quantmod", "forecast","prophet",
@@ -24,49 +25,24 @@ lapply(packages, require, character.only = T)
 library(ggplot2)
 ```
 
-You can add options to executable code like this
+# Quantitative Fianance
 
 
+
+Select the stock and the timeframe you want to analyse:
 ```{r}
 inputPanel(
   shiny::textInput("stock", "Select Stock", "PG")
 )
 
-
-
-# dt_stock <- data.table(tq_get(input$stock, get = "stock.prices", from = "1995-01-01"))
-# 
-# 
-# 
-# 
-# 
-# 
-# mdate <- "2020-01-03"
-# amazonPrices <- data.frame(getSymbols("DT", from = mdate, auto.assign = F))
-# dates <- row.names(amazonPrices)
-# dt_stock <- data.table(dates, amazonPrices)
-# dt_stock[, dates := as.IDate(dates)]
-# dt_stock[, closed_log := log(DT.Close)]
-# 
-# ggplot(data = dt_stock,aes(x = dates)) + geom_point(aes(y = DT.Close), size = 0.5) +
-#   geom_point(aes(y = DT.Open), size = 0.5, colour = "red") + theme_bw()
-# 
-# ggplot(data = dt_stock) + geom_line(aes(x = dates, y = closed_log), size = 0.5) + 
-#   theme_bw()
-```
-
-```{r}
-# plotlyOutput("distPlot")
-# textOutput("value")
-head(selectedData())
+fluidPage(
+  dateRangeInput("dates", label = "Date range",  start = Sys.time() - 24*365*3600)
+)
 
 ```
 
 ```{r}
 plotlyOutput("distPlot")
-# plotOutput("distPlot")
-# textOutput("value")
-
 ```
 
 
@@ -82,7 +58,8 @@ output$value <- renderText({ input$stock })
 
 selectedData <- reactive({
   
-    dt_stock <- data.table(tq_get(input$stock, get = "stock.prices", from = "2018-01-01"))
+    dt_stock <- data.table(tq_get(input$stock, get = "stock.prices", from = input$dates[1], 
+                                  to = input$dates[2]))
   })
 
 output$distPlot <- renderPlotly({
@@ -94,4 +71,7 @@ output$distPlot <- renderPlotly({
 })
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+## Calculating and Comparing rates of return
+
+
+## Measuring investment risk
